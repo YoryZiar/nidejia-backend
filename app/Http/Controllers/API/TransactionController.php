@@ -25,9 +25,9 @@ class TransactionController extends Controller
 
     private function _fullyBookedChecker(Store $request)
     {
-        $listing = Listing::find($request->listing_id);
+        $listing = Listing::findOrFail($request->listing_id);
         $runningTransactionCount = Transaction::whereListingId($listing->id)
-            ->whereNot('status', 'canceled')
+            ->whereIn('status', ['waiting', 'approved'])
             ->where(function($query) use ($request) {
                 $query->whereBetween('start_date', [
                     $request->start_date,
@@ -74,7 +74,7 @@ class TransactionController extends Controller
             'user_id' => auth()->user()->id,
         ]);
 
-        $transaction->Listing;
+        $transaction->load('listing');
 
         return response()->json([
             'success' => true,
@@ -92,7 +92,7 @@ class TransactionController extends Controller
             ], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $transaction->Listing;
+        $transaction->load('listing');
 
         return response()->json([
                 'success' => true,
